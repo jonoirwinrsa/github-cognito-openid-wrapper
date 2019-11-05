@@ -6,53 +6,26 @@ const github = require('./github');
 const getJwks = () => ({ keys: [crypto.getPublicKey()] });
 
 const getUserInfo = accessToken =>
-  Promise.all([
-    github()
-      .getUserDetails(accessToken)
-      .then(userDetails => {
-        logger.debug('Fetched user details: %j', userDetails, {});
-        // Here we map the github user response to the standard claims from
-        // OpenID. The mapping was constructed by following
-        // https://developer.github.com/v3/users/
-        // and http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
-        const claims = {
-          sub: `${userDetails.id}`, // OpenID requires a string
-          name: userDetails.name,
-          preferred_username: userDetails.login,
-          profile: userDetails.html_url,
-          picture: userDetails.avatar_url,
-          website: userDetails.blog,
-          updated_at: NumericDate(
-            // OpenID requires the seconds since epoch in UTC
-            new Date(Date.parse(userDetails.updated_at))
-          )
-        };
-        logger.debug('Resolved claims: %j', claims, {});
-        return claims;
-      }),
-    github()
-      .getUserEmails(accessToken)
-      .then(userEmails => {
-        logger.debug('Fetched user emails: %j', userEmails, {});
-        const primaryEmail = userEmails.find(email => email.primary);
-        if (primaryEmail === undefined) {
-          throw new Error('User did not have a primary email address');
-        }
-        const claims = {
-          email: primaryEmail.email,
-          email_verified: primaryEmail.verified
-        };
-        logger.debug('Resolved claims: %j', claims, {});
-        return claims;
-      })
-  ]).then(claims => {
-    const mergedClaims = claims.reduce(
-      (acc, claim) => ({ ...acc, ...claim }),
-      {}
-    );
-    logger.debug('Resolved combined claims: %j', mergedClaims, {});
-    return mergedClaims;
-  });
+  github()
+    .getUserDetails(accessToken)
+    .then(userDetails => {
+      logger.debug('Fetched user details: %j', userDetails, {});
+      // Here we map the github user response to the standard claims from
+      // OpenID. The mapping was constructed by following
+      // https://developer.github.com/v3/users/
+      // and http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+      const claims = {
+        sub: `${userDetails.user.id}`, // OpenID requires a string
+        name: userDetails.user.real_name,
+        preferred_username: userDetails.user.name,
+        email: userDetails.user.profile.email,
+        phone: userDetails.user.profile.phone,
+        picture: userDetails.user.profile.image_512,
+        updated_at: userDetails.user.updated
+      };
+      logger.debug('Resolved claims: %j', claims, {});
+      return claims;
+    });
 
 const getAuthorizeUrl = (client_id, scope, state, response_type) =>
   github().getAuthorizeUrl(client_id, scope, state, response_type);
@@ -61,7 +34,7 @@ const getTokens = (code, state, host) =>
   github()
     .getToken(code, state)
     .then(githubToken => {
-      logger.debug('Got token: %s', githubToken, {});
+      logger.debug('Got token: %s', JSON.stringify(githubToken), {});
       // GitHub returns scopes separated by commas
       // But OAuth wants them to be spaces
       // https://tools.ietf.org/html/rfc6749#section-5.1
@@ -83,12 +56,15 @@ const getTokens = (code, state, host) =>
           // and generating the userInfo takes too long.
           // It means the ID token is empty except for metadata.
           //  ...userInfo,
+          sub: githubToken.user_id,
+          email: `${githubToken.user_id}@sov.tech`
         };
 
         const idToken = crypto.makeIdToken(payload, host);
         const tokenResponse = {
           ...githubToken,
           scope,
+          token_type: 'bearer',
           id_token: idToken
         };
 
@@ -112,7 +88,7 @@ const getConfigFor = host => ({
   // end_session_endpoint: 'https://server.example.com/connect/end_session',
   jwks_uri: `https://${host}/.well-known/jwks.json`,
   // registration_endpoint: 'https://server.example.com/connect/register',
-  scopes_supported: ['openid', 'read:user', 'user:email'],
+  scopes_supported: ['users:read', 'users:read.email'],
   response_types_supported: [
     'code',
     'code id_token',

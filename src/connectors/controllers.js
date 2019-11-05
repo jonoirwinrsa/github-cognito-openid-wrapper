@@ -3,9 +3,10 @@ const openid = require('../openid');
 
 module.exports = respond => ({
   authorize: (client_id, scope, state, response_type) => {
+    const cleanScope = scope.split('openid ').join('');
     const authorizeUrl = openid.getAuthorizeUrl(
       client_id,
-      scope,
+      cleanScope,
       state,
       response_type
     );

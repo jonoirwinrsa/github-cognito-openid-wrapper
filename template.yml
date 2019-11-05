@@ -30,11 +30,11 @@ Parameters:
     Type: String
   GitHubUrlParameter:
     Type: String
-    Default: "https://api.github.com"
+    Default: "https://slack.com"
     MinLength: 1
   GitHubLoginUrlParameter:
     Type: String
-    Default: "https://github.com"
+    Default: "https://slack.com"
     MinLength: 1
 
 Resources:

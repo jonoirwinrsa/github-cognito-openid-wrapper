@@ -12,10 +12,9 @@ const getApiEndpoints = (
   apiBaseUrl = GITHUB_API_URL,
   loginBaseUrl = GITHUB_LOGIN_URL
 ) => ({
-  userDetails: `${apiBaseUrl}/user`,
-  userEmails: `${apiBaseUrl}/user/emails`,
-  oauthToken: `${loginBaseUrl}/login/oauth/access_token`,
-  oauthAuthorize: `${loginBaseUrl}/login/oauth/authorize`
+  userDetails: `${apiBaseUrl}/api/users.info`,
+  oauthToken: `${loginBaseUrl}/api/oauth.access`,
+  oauthAuthorize: `${loginBaseUrl}/oauth/authorize`
 });
 
 const check = response => {
@@ -23,7 +22,7 @@ const check = response => {
   if (response.data) {
     if (response.data.error) {
       throw new Error(
-        `GitHub API responded with a failure: ${response.data.error}, ${
+        `Slack API responded with a failure: ${response.data.error}, ${
           response.data.error_description
         }`
       );
@@ -32,7 +31,7 @@ const check = response => {
     }
   }
   throw new Error(
-    `GitHub API responded with a failure: ${response.status} (${
+    `Slack API responded with a failure: ${response.status} (${
       response.statusText
     })`
   );
@@ -42,23 +41,23 @@ const gitHubGet = (url, accessToken) =>
   axios({
     method: 'get',
     url,
-    headers: {
-      Accept: 'application/vnd.github.v3+json',
-      Authorization: `token ${accessToken}`
+    params: {
+      token: accessToken,
+      user: 'U2T7NS9AA'
     }
   });
 
 module.exports = (apiBaseUrl, loginBaseUrl) => {
   const urls = getApiEndpoints(apiBaseUrl, loginBaseUrl || apiBaseUrl);
   return {
-    getAuthorizeUrl: (client_id, scope, state, response_type) =>
-      `${urls.oauthAuthorize}?client_id=${client_id}&scope=${encodeURIComponent(
+    getAuthorizeUrl: (client_id, scope, state, response_type) => {
+      scope.split('openid').join('');
+      return `${urls.oauthAuthorize}?client_id=${client_id}&scope=${encodeURIComponent(
         scope
-      )}&state=${state}&response_type=${response_type}`,
+      )}&state=${state}&response_type=${response_type}`;
+    },
     getUserDetails: accessToken =>
       gitHubGet(urls.userDetails, accessToken).then(check),
-    getUserEmails: accessToken =>
-      gitHubGet(urls.userEmails, accessToken).then(check),
     getToken: (code, state) => {
       const data = {
         // OAuth required fields
@@ -80,13 +79,13 @@ module.exports = (apiBaseUrl, loginBaseUrl) => {
         {}
       );
       return axios({
-        method: 'post',
+        method: 'get',
         url: urls.oauthToken,
+        params: data,
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json'
-        },
-        data
+        }
       }).then(check);
     }
   };
