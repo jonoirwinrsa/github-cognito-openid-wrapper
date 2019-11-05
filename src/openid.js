@@ -56,7 +56,7 @@ const getTokens = (code, state, host) =>
           // It means the ID token is empty except for metadata.
           //  ...userInfo,
           sub: slackToken.user_id,
-          email: `${slackToken.user_id}@sov.tech`
+          email: `${slackToken.user_id}@example.com`
         };
 
         const idToken = crypto.makeIdToken(payload, host);
