@@ -38,7 +38,7 @@ const getTokens = (code, state, host) =>
       // But OAuth wants them to be spaces
       // https://tools.ietf.org/html/rfc6749#section-5.1
       // Also, we need to add openid as a scope,
-      // since Slack will have stripped it
+      // since we stripped it out earlier otherwise Slack would complain
       const scope = `openid ${slackToken.scope.replace(',', ' ')}`;
 
       // ** JWT ID Token required fields **
