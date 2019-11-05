@@ -1,7 +1,7 @@
 {
-  "name": "github-cognito-openid-wrapper",
+  "name": "slack-cognito-openid-wrapper",
   "version": "1.1.0",
-  "description": "A wrapper to enable AWS Cognito User Pools (which requires OpenID Connect) to talk to GitHub (which only provides OAuth2.0)",
+  "description": "A wrapper to enable AWS Cognito User Pools (which requires OpenID Connect) to talk to Slack (which only provides OAuth2.0)",
   "main": "dist-web/server.js",
   "repository": {
     "type": "git",

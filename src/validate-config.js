@@ -17,8 +17,8 @@ const ensureNumber = variableName => {
 };
 
 const requiredStrings = [
-  'GITHUB_CLIENT_ID',
-  'GITHUB_CLIENT_SECRET',
+  'SLACK_CLIENT_ID',
+  'SLACK_CLIENT_SECRET',
   'COGNITO_REDIRECT_URI'
 ];
 

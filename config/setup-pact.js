@@ -13,5 +13,5 @@ global.provider = new Pact({
   logLevel: 'fatal',
   pactfileWriteMode: 'update',
   consumer: pkg.name,
-  provider: 'GitHub.com'
+  provider: 'Slack.com'
 });

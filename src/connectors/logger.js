@@ -19,7 +19,7 @@ if (SPLUNK_URL) {
     url: SPLUNK_URL || 'localhost',
     token: SPLUNK_TOKEN,
     source: SPLUNK_SOURCE || '/var/log/GHOIdShim.log',
-    sourcetype: SPLUNK_SOURCETYPE || 'github-cognito-openid-wrapper',
+    sourcetype: SPLUNK_SOURCETYPE || 'slack-cognito-openid-wrapper',
     index: SPLUNK_INDEX || 'main',
     maxBatchCount: 1
   };

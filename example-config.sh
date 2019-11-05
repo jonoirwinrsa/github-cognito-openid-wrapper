@@ -1,13 +1,13 @@
 #!/bin/bash -eu
 
 # Variables always required
-export GITHUB_CLIENT_ID=# <GitHub OAuth App Client ID>
-export GITHUB_CLIENT_SECRET=# <GitHub OAuth App Client Secret>
+export SLACK_CLIENT_ID=# <Slack OAuth App Client ID>
+export SLACK_CLIENT_SECRET=# <Slack OAuth App Client Secret>
 export COGNITO_REDIRECT_URI=# https://<Your Cognito Domain>/oauth2/idpresponse
 
-# Variables required if used with GitHub Enterprise
-# GITHUB_API_URL=# https://<GitHub Enterprise Host>/api/v3
-# GITHUB_LOGIN_URL=# https://<GitHub Enterprise Host>
+# Variables required if used with Slack Enterprise
+# SLACK_API_URL=# https://<Slack Enterprise Host>/api/v3
+# SLACK_LOGIN_URL=# https://<Slack Enterprise Host>
 
 # Variables required if Splunk logger is used
 # SPLUNK_URL=# https://<Splunk HEC>/services/collector/event/1.0

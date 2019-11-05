@@ -1,16 +1,16 @@
 const axios = require('axios');
 const {
-  GITHUB_CLIENT_ID,
-  GITHUB_CLIENT_SECRET,
+  SLACK_CLIENT_ID,
+  SLACK_CLIENT_SECRET,
   COGNITO_REDIRECT_URI,
-  GITHUB_API_URL,
-  GITHUB_LOGIN_URL
+  SLACK_API_URL,
+  SLACK_LOGIN_URL
 } = require('./config');
 const logger = require('./connectors/logger');
 
 const getApiEndpoints = (
-  apiBaseUrl = GITHUB_API_URL,
-  loginBaseUrl = GITHUB_LOGIN_URL
+  apiBaseUrl = SLACK_API_URL,
+  loginBaseUrl = SLACK_LOGIN_URL
 ) => ({
   userDetails: `${apiBaseUrl}/api/users.info`,
   oauthToken: `${loginBaseUrl}/api/oauth.access`,
@@ -37,7 +37,7 @@ const check = response => {
   );
 };
 
-const gitHubGet = (url, accessToken) =>
+const slackGet = (url, accessToken) =>
   axios({
     method: 'get',
     url,
@@ -57,16 +57,16 @@ module.exports = (apiBaseUrl, loginBaseUrl) => {
       )}&state=${state}&response_type=${response_type}`;
     },
     getUserDetails: accessToken =>
-      gitHubGet(urls.userDetails, accessToken).then(check),
+      slackGet(urls.userDetails, accessToken).then(check),
     getToken: (code, state) => {
       const data = {
         // OAuth required fields
         grant_type: 'authorization_code',
         redirect_uri: COGNITO_REDIRECT_URI,
-        client_id: GITHUB_CLIENT_ID,
-        // GitHub Specific
+        client_id: SLACK_CLIENT_ID,
+        // Slack Specific
         response_type: 'code',
-        client_secret: GITHUB_CLIENT_SECRET,
+        client_secret: SLACK_CLIENT_SECRET,
         code,
         // State may not be present, so we conditionally include it
         ...(state && { state })

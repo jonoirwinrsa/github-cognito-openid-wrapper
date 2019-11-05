@@ -1,18 +1,17 @@
 const logger = require('./connectors/logger');
-const { NumericDate } = require('./helpers');
 const crypto = require('./crypto');
-const github = require('./github');
+const slack = require('./slack');
 
 const getJwks = () => ({ keys: [crypto.getPublicKey()] });
 
 const getUserInfo = accessToken =>
-  github()
+  slack()
     .getUserDetails(accessToken)
     .then(userDetails => {
       logger.debug('Fetched user details: %j', userDetails, {});
-      // Here we map the github user response to the standard claims from
+      // Here we map the slack user response to the standard claims from
       // OpenID. The mapping was constructed by following
-      // https://developer.github.com/v3/users/
+      // https://developer.slack.com/v3/users/
       // and http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
       const claims = {
         sub: `${userDetails.user.id}`, // OpenID requires a string
@@ -28,23 +27,23 @@ const getUserInfo = accessToken =>
     });
 
 const getAuthorizeUrl = (client_id, scope, state, response_type) =>
-  github().getAuthorizeUrl(client_id, scope, state, response_type);
+  slack().getAuthorizeUrl(client_id, scope, state, response_type);
 
 const getTokens = (code, state, host) =>
-  github()
+  slack()
     .getToken(code, state)
-    .then(githubToken => {
-      logger.debug('Got token: %s', JSON.stringify(githubToken), {});
-      // GitHub returns scopes separated by commas
+    .then(slackToken => {
+      logger.debug('Got token: %s', JSON.stringify(slackToken), {});
+      // Slack returns scopes separated by commas
       // But OAuth wants them to be spaces
       // https://tools.ietf.org/html/rfc6749#section-5.1
       // Also, we need to add openid as a scope,
-      // since GitHub will have stripped it
-      const scope = `openid ${githubToken.scope.replace(',', ' ')}`;
+      // since Slack will have stripped it
+      const scope = `openid ${slackToken.scope.replace(',', ' ')}`;
 
       // ** JWT ID Token required fields **
       // iss - issuer https url
-      // aud - audience that this token is valid for (GITHUB_CLIENT_ID)
+      // aud - audience that this token is valid for (SLACK_CLIENT_ID)
       // sub - subject identifier - must be unique
       // ** Also required, but provided by jsonwebtoken **
       // exp - expiry time for the id token (seconds since epoch in UTC)
@@ -56,13 +55,13 @@ const getTokens = (code, state, host) =>
           // and generating the userInfo takes too long.
           // It means the ID token is empty except for metadata.
           //  ...userInfo,
-          sub: githubToken.user_id,
-          email: `${githubToken.user_id}@sov.tech`
+          sub: slackToken.user_id,
+          email: `${slackToken.user_id}@sov.tech`
         };
 
         const idToken = crypto.makeIdToken(payload, host);
         const tokenResponse = {
-          ...githubToken,
+          ...slackToken,
           scope,
           token_type: 'bearer',
           id_token: idToken

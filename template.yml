@@ -3,36 +3,36 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
     ./rego-api-identity-proxy
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+# More info about Globals: https://slack.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
     Function:
         Runtime: nodejs8.10
         Timeout: 15
         Environment:
           Variables:
-            GITHUB_CLIENT_ID:
-              Ref: GitHubClientIdParameter
-            GITHUB_CLIENT_SECRET:
-              Ref: GitHubClientSecretParameter
+            SLACK_CLIENT_ID:
+              Ref: SlackClientIdParameter
+            SLACK_CLIENT_SECRET:
+              Ref: SlackClientSecretParameter
             COGNITO_REDIRECT_URI:
               Ref: CognitoRedirectUriParameter
-            GITHUB_API_URL:
-              Ref: GitHubUrlParameter
-            GITHUB_LOGIN_URL:
-              Ref: GitHubLoginUrlParameter
+            SLACK_API_URL:
+              Ref: SlackUrlParameter
+            SLACK_LOGIN_URL:
+              Ref: SlackLoginUrlParameter
 
 Parameters:
-  GitHubClientIdParameter:
+  SlackClientIdParameter:
     Type: String
-  GitHubClientSecretParameter:
+  SlackClientSecretParameter:
     Type: String
   CognitoRedirectUriParameter:
     Type: String
-  GitHubUrlParameter:
+  SlackUrlParameter:
     Type: String
     Default: "https://slack.com"
     MinLength: 1
-  GitHubLoginUrlParameter:
+  SlackLoginUrlParameter:
     Type: String
     Default: "https://slack.com"
     MinLength: 1
@@ -105,6 +105,6 @@ Resources:
             Method: get
 
 Outputs:
-    GitHubShimIssuer:
-      Description: "GitHub OpenID Shim Issuer"
+    SlackShimIssuer:
+      Description: "Slack OpenID Shim Issuer"
       Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"

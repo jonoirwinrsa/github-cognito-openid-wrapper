@@ -1,16 +1,16 @@
-const github = require('./github');
+const slack = require('./slack');
 
 /* global provider PACT_BASE_URL */
 
 jest.mock('./config', () => ({
   COGNITO_REDIRECT_URI: 'COGNITO_REDIRECT_URI',
-  GITHUB_CLIENT_SECRET: 'GITHUB_CLIENT_SECRET',
-  GITHUB_CLIENT_ID: 'GITHUB_CLIENT_ID',
-  GITHUB_API_URL: 'GITHUB_API_URL',
-  GITHUB_LOGIN_URL: 'GITHUB_LOGIN_URL'
+  SLACK_CLIENT_SECRET: 'SLACK_CLIENT_SECRET',
+  SLACK_CLIENT_ID: 'SLACK_CLIENT_ID',
+  SLACK_API_URL: 'SLACK_API_URL',
+  SLACK_LOGIN_URL: 'SLACK_LOGIN_URL'
 }));
 
-describe('GitHub Client Pact', () => {
+describe('Slack Client Pact', () => {
   beforeAll(() => provider.setup());
   afterAll(() => provider.finalize());
   afterEach(() => provider.verify());
@@ -22,7 +22,7 @@ describe('GitHub Client Pact', () => {
         method: 'GET',
         path: '/user',
         headers: {
-          Accept: 'application/vnd.github.v3+json',
+          Accept: 'application/vnd.slack.v3+json',
           Authorization: `token THIS_IS_MY_TOKEN`
         }
       }
@@ -46,7 +46,7 @@ describe('GitHub Client Pact', () => {
 
       // add expectations
       it('returns a sucessful body', done =>
-        github(PACT_BASE_URL)
+        slack(PACT_BASE_URL)
           .getUserDetails('THIS_IS_MY_TOKEN')
           .then(response => {
             expect(response).toEqual(EXPECTED_BODY);
@@ -75,7 +75,7 @@ describe('GitHub Client Pact', () => {
 
       // add expectations
       it('rejects the promise', done => {
-        github(PACT_BASE_URL)
+        slack(PACT_BASE_URL)
           .getUserDetails('THIS_IS_MY_TOKEN')
           .catch(() => {
             done();
@@ -104,7 +104,7 @@ describe('GitHub Client Pact', () => {
 
       // add expectations
       it('rejects the promise', done => {
-        github(PACT_BASE_URL)
+        slack(PACT_BASE_URL)
           .getUserDetails('THIS_IS_MY_TOKEN')
           .catch(() => {
             done();
@@ -120,7 +120,7 @@ describe('GitHub Client Pact', () => {
         method: 'GET',
         path: '/user/emails',
         headers: {
-          Accept: 'application/vnd.github.v3+json',
+          Accept: 'application/vnd.slack.v3+json',
           Authorization: `token THIS_IS_MY_TOKEN`
         }
       }
@@ -144,7 +144,7 @@ describe('GitHub Client Pact', () => {
 
       // add expectations
       it('returns a sucessful body', done =>
-        github(PACT_BASE_URL)
+        slack(PACT_BASE_URL)
           .getUserEmails('THIS_IS_MY_TOKEN')
           .then(response => {
             expect(response).toEqual(EXPECTED_BODY);
@@ -173,7 +173,7 @@ describe('GitHub Client Pact', () => {
 
       // add expectations
       it('rejects the promise', done => {
-        github(PACT_BASE_URL)
+        slack(PACT_BASE_URL)
           .getUserEmails('THIS_IS_MY_TOKEN')
           .catch(() => {
             done();
@@ -202,7 +202,7 @@ describe('GitHub Client Pact', () => {
 
       // add expectations
       it('rejects the promise', done => {
-        github(PACT_BASE_URL)
+        slack(PACT_BASE_URL)
           .getUserEmails('THIS_IS_MY_TOKEN')
           .catch(() => {
             done();
@@ -215,7 +215,7 @@ describe('GitHub Client Pact', () => {
     describe('always', () => {
       it('returns a redirect url', () => {
         expect(
-          github(PACT_BASE_URL).getAuthorizeUrl(
+          slack(PACT_BASE_URL).getAuthorizeUrl(
             'client_id',
             'scope',
             'state',
@@ -242,10 +242,10 @@ describe('GitHub Client Pact', () => {
           // OAuth required fields
           grant_type: 'authorization_code',
           redirect_uri: 'COGNITO_REDIRECT_URI',
-          client_id: 'GITHUB_CLIENT_ID',
-          // GitHub Specific
+          client_id: 'SLACK_CLIENT_ID',
+          // Slack Specific
           response_type: 'code',
-          client_secret: 'GITHUB_CLIENT_SECRET',
+          client_secret: 'SLACK_CLIENT_SECRET',
           code: 'SOME_CODE'
         }
       }
@@ -274,7 +274,7 @@ describe('GitHub Client Pact', () => {
 
       // add expectations
       it('returns a sucessful body', done =>
-        github(PACT_BASE_URL)
+        slack(PACT_BASE_URL)
           .getToken('SOME_CODE')
           .then(response => {
             expect(response).toEqual(EXPECTED_BODY);
@@ -303,7 +303,7 @@ describe('GitHub Client Pact', () => {
 
       // add expectations
       it('rejects the promise', done => {
-        github(PACT_BASE_URL)
+        slack(PACT_BASE_URL)
           .getToken('SOME_CODE')
           .catch(() => {
             done();
@@ -332,7 +332,7 @@ describe('GitHub Client Pact', () => {
 
       // add expectations
       it('rejects the promise', done => {
-        github(PACT_BASE_URL)
+        slack(PACT_BASE_URL)
           .getToken('SOME_CODE')
           .catch(() => {
             done();
