@@ -69,11 +69,7 @@ You will need to:
   - Authorization callback URL: `https://<Your Cognito Domain>/oauth2/idpresponse`
   - Note down the Client ID and secret
 
-(If you use Slack Enterprise, you need the API & Login URL. This is usually `https://<Slack Enterprise Host>/api/v3` and `https://<Slack Enterprise Host>`.)
-
-Next you need to decide if you'd like to deploy with lambda/API Gateway (follow Step 2a), or as a node server (follow Step 2b)
-
-### 2a: Deployment with lambda and API Gateway
+### 2: Deployment with lambda and API Gateway
 
 - Install the `aws` and `sam` CLIs from AWS:
 
@@ -88,23 +84,6 @@ Next you need to decide if you'd like to deploy with lambda/API Gateway (follow 
 
 - Run `npm install` and `npm run deploy`
 - Note down the DNS of the deployed API Gateway (available in the AWS console).
-
-### 2b: Running the node server
-
-- Set environment variables for the OAuth App client/secret, callback url, and
-  port to run the server on:
-
-       cp example-config.sh config.sh
-       vim config.sh # Or whatever your favourite editor is
-
-- Source the config file:
-
-```
-  source config.sh
-```
-
-- Run `npm run start` to fire up an auto-refreshing development build of the
-  server (production deployment is out of scope for this repository, but you can expose it using something like [ngrok](https://ngrok.com/) for easy development and testing with Cognito).
 
 ### 3: Finalise Cognito configuration
 
@@ -264,7 +243,7 @@ A full OpenID implementation would also include:
 
 **Known issues**
 
-See [the issue tracker](https://slack.com/TimothyJones/slack-cognito-openid-wrapper/issues) for an up to date list.
+See [the issue tracker](https://slack.com/jonoirwinrsa/slack-cognito-openid-wrapper/issues) for an up to date list.
 
 ## Extending
 
