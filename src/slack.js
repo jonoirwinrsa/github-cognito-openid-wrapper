@@ -2,19 +2,14 @@ const axios = require('axios');
 const {
   SLACK_CLIENT_ID,
   SLACK_CLIENT_SECRET,
-  COGNITO_REDIRECT_URI,
-  SLACK_API_URL,
-  SLACK_LOGIN_URL
+  COGNITO_REDIRECT_URI
 } = require('./config');
 const logger = require('./connectors/logger');
 
-const getApiEndpoints = (
-  apiBaseUrl = SLACK_API_URL,
-  loginBaseUrl = SLACK_LOGIN_URL
-) => ({
-  userDetails: `${apiBaseUrl}/api/users.info`,
-  oauthToken: `${loginBaseUrl}/api/oauth.access`,
-  oauthAuthorize: `${loginBaseUrl}/oauth/authorize`
+const getApiEndpoints = () => ({
+  userDetails: `https://slack.com/api/users.info`,
+  oauthToken: `https://slack.com/api/oauth.access`,
+  oauthAuthorize: `https://slack.com/oauth/authorize`
 });
 
 const check = response => {
@@ -52,7 +47,9 @@ module.exports = (apiBaseUrl, loginBaseUrl) => {
   return {
     getAuthorizeUrl: (client_id, scope, state, response_type) => {
       scope.split('openid').join('');
-      return `${urls.oauthAuthorize}?client_id=${client_id}&scope=${encodeURIComponent(
+      return `${
+        urls.oauthAuthorize
+      }?client_id=${client_id}&scope=${encodeURIComponent(
         scope
       )}&state=${state}&response_type=${response_type}`;
     },

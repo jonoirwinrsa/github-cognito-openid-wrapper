@@ -20,7 +20,11 @@ const getUserInfo = accessToken =>
         email: userDetails.user.profile.email,
         phone: userDetails.user.profile.phone,
         picture: userDetails.user.profile.image_512,
-        updated_at: userDetails.user.updated
+        updated_at: userDetails.user.updated,
+        team: userDetails.user.team,
+        website: userDetails.user.team,
+        first_name: userDetails.user.first_name,
+        last_name: userDetails.user.last_name
       };
       logger.debug('Resolved claims: %j', claims, {});
       return claims;
@@ -34,42 +38,45 @@ const getTokens = (code, state, host) =>
     .getToken(code, state)
     .then(slackToken => {
       logger.debug('Got token: %s', JSON.stringify(slackToken), {});
-      // Slack returns scopes separated by commas
-      // But OAuth wants them to be spaces
-      // https://tools.ietf.org/html/rfc6749#section-5.1
-      // Also, we need to add openid as a scope,
-      // since we stripped it out earlier otherwise Slack would complain
-      const scope = `openid ${slackToken.scope.replace(',', ' ')}`;
 
-      // ** JWT ID Token required fields **
-      // iss - issuer https url
-      // aud - audience that this token is valid for (SLACK_CLIENT_ID)
-      // sub - subject identifier - must be unique
-      // ** Also required, but provided by jsonwebtoken **
-      // exp - expiry time for the id token (seconds since epoch in UTC)
-      // iat - time that the JWT was issued (seconds since epoch in UTC)
+      return getUserInfo(slackToken.access_token).then(userInfo => {
+        logger.debug('Got user details: %s', JSON.stringify(userInfo), {});
 
-      return new Promise(resolve => {
-        const payload = {
-          // This was commented because Cognito times out in under a second
-          // and generating the userInfo takes too long.
-          // It means the ID token is empty except for metadata.
-          //  ...userInfo,
-          sub: slackToken.user_id,
-          email: `${slackToken.user_id}@example.com`
-        };
+        // Slack returns scopes separated by commas
+        // But OAuth wants them to be spaces
+        // https://tools.ietf.org/html/rfc6749#section-5.1
+        // Also, we need to add openid as a scope,
+        // since we stripped it out earlier otherwise Slack would complain
+        const scope = `openid ${slackToken.scope.replace(',', ' ')}`;
 
-        const idToken = crypto.makeIdToken(payload, host);
-        const tokenResponse = {
-          ...slackToken,
-          scope,
-          token_type: 'bearer',
-          id_token: idToken
-        };
+        // ** JWT ID Token required fields **
+        // iss - issuer https url
+        // aud - audience that this token is valid for (SLACK_CLIENT_ID)
+        // sub - subject identifier - must be unique
+        // ** Also required, but provided by jsonwebtoken **
+        // exp - expiry time for the id token (seconds since epoch in UTC)
+        // iat - time that the JWT was issued (seconds since epoch in UTC)
 
-        logger.debug('Resolved token response: %j', tokenResponse, {});
+        return new Promise(resolve => {
+          const payload = {
+            // This was commented because Cognito times out in under a second
+            // and generating the userInfo takes too long.
+            // It means the ID token is empty except for metadata.
+            ...userInfo
+          };
 
-        resolve(tokenResponse);
+          const idToken = crypto.makeIdToken(payload, host);
+          const tokenResponse = {
+            ...slackToken,
+            scope,
+            token_type: 'bearer',
+            id_token: idToken
+          };
+
+          logger.debug('Resolved token response: %j', tokenResponse, {});
+
+          resolve(tokenResponse);
+        });
       });
     });
 
@@ -103,6 +110,9 @@ const getConfigFor = host => ({
   claims_supported: [
     'sub',
     'name',
+    'first_name',
+    'last_name',
+    'team',
     'preferred_username',
     'profile',
     'picture',
