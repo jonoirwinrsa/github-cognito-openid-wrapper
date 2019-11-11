@@ -11,7 +11,6 @@ const getUserInfo = accessToken =>
       logger.debug('Fetched user details: %j', userDetails, {});
       // Here we map the slack user response to the standard claims from
       // OpenID. The mapping was constructed by following
-      // https://developer.slack.com/v3/users/
       // and http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
       const claims = {
         sub: `${userDetails.user.id}`, // OpenID requires a string
@@ -23,8 +22,8 @@ const getUserInfo = accessToken =>
         updated_at: userDetails.user.updated,
         team: userDetails.user.team,
         website: userDetails.user.team,
-        first_name: userDetails.user.first_name,
-        last_name: userDetails.user.last_name
+        given_name: userDetails.user.first_name,
+        family_name: userDetails.user.last_name
       };
       logger.debug('Resolved claims: %j', claims, {});
       return claims;
@@ -110,8 +109,8 @@ const getConfigFor = host => ({
   claims_supported: [
     'sub',
     'name',
-    'first_name',
-    'last_name',
+    'given_name',
+    'family_name',
     'team',
     'preferred_username',
     'profile',
