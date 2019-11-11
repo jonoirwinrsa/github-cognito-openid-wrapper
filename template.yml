@@ -1,12 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-    ./rego-api-identity-proxy
+    ./slack-api-identity-proxy
 
 # More info about Globals: https://slack.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
     Function:
-        Runtime: nodejs8.10
+        Runtime: nodejs10.x
         Timeout: 15
         Environment:
           Variables:
