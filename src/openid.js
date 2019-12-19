@@ -4,7 +4,24 @@ const slack = require('./slack');
 
 const getJwks = () => ({ keys: [crypto.getPublicKey()] });
 
-const getUserInfo = accessToken =>
+function getUserInfoFromTokenResponse(tokenResponse) {
+  logger.debug('From token response: %j', tokenResponse, {});
+  // Here we map the slack user response to the standard claims from
+  // OpenID. The mapping was constructed by following
+  // and http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+  const claims = {
+    sub: `${tokenResponse.user.id}`, // OpenID requires a string
+    name: tokenResponse.user.name,
+    preferred_username: tokenResponse.user.name,
+    email: tokenResponse.user.email,
+    picture: tokenResponse.user.image_512,
+    team: tokenResponse.team.id,
+  };
+  logger.debug('Resolved claims: %j', claims, {});
+  return claims;
+}
+
+const getUserInfo = (accessToken) =>
   slack()
     .getUserDetails(accessToken)
     .then(userDetails => {
@@ -14,16 +31,11 @@ const getUserInfo = accessToken =>
       // and http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
       const claims = {
         sub: `${userDetails.user.id}`, // OpenID requires a string
-        name: userDetails.user.real_name,
+        name: userDetails.user.name,
         preferred_username: userDetails.user.name,
-        email: userDetails.user.profile.email,
-        phone: userDetails.user.profile.phone,
-        picture: userDetails.user.profile.image_512,
-        updated_at: userDetails.user.updated,
-        team: userDetails.user.team,
-        website: userDetails.user.team,
-        given_name: userDetails.user.first_name,
-        family_name: userDetails.user.last_name
+        email: userDetails.user.email,
+        picture: userDetails.user.image_512,
+        team: userDetails.team.id,
       };
       logger.debug('Resolved claims: %j', claims, {});
       return claims;
@@ -38,44 +50,43 @@ const getTokens = (code, state, host) =>
     .then(slackToken => {
       logger.debug('Got token: %s', JSON.stringify(slackToken), {});
 
-      return getUserInfo(slackToken.access_token).then(userInfo => {
-        logger.debug('Got user details: %s', JSON.stringify(userInfo), {});
+      const userInfo = getUserInfoFromTokenResponse(slackToken);
+      logger.debug('Got user details: %s', JSON.stringify(userInfo), {});
 
-        // Slack returns scopes separated by commas
-        // But OAuth wants them to be spaces
-        // https://tools.ietf.org/html/rfc6749#section-5.1
-        // Also, we need to add openid as a scope,
-        // since we stripped it out earlier otherwise Slack would complain
-        const scope = `openid ${slackToken.scope.replace(',', ' ')}`;
+      // Slack returns scopes separated by commas
+      // But OAuth wants them to be spaces
+      // https://tools.ietf.org/html/rfc6749#section-5.1
+      // Also, we need to add openid as a scope,
+      // since we stripped it out earlier otherwise Slack would complain
+      const scope = `openid ${slackToken.scope.replace(',', ' ')}`;
 
-        // ** JWT ID Token required fields **
-        // iss - issuer https url
-        // aud - audience that this token is valid for (SLACK_CLIENT_ID)
-        // sub - subject identifier - must be unique
-        // ** Also required, but provided by jsonwebtoken **
-        // exp - expiry time for the id token (seconds since epoch in UTC)
-        // iat - time that the JWT was issued (seconds since epoch in UTC)
+      // ** JWT ID Token required fields **
+      // iss - issuer https url
+      // aud - audience that this token is valid for (SLACK_CLIENT_ID)
+      // sub - subject identifier - must be unique
+      // ** Also required, but provided by jsonwebtoken **
+      // exp - expiry time for the id token (seconds since epoch in UTC)
+      // iat - time that the JWT was issued (seconds since epoch in UTC)
 
-        return new Promise(resolve => {
-          const payload = {
-            // This was commented because Cognito times out in under a second
-            // and generating the userInfo takes too long.
-            // It means the ID token is empty except for metadata.
-            ...userInfo
-          };
+      return new Promise(resolve => {
+        const payload = {
+          // This was commented because Cognito times out in under a second
+          // and generating the userInfo takes too long.
+          // It means the ID token is empty except for metadata.
+          ...userInfo
+        };
 
-          const idToken = crypto.makeIdToken(payload, host);
-          const tokenResponse = {
-            ...slackToken,
-            scope,
-            token_type: 'bearer',
-            id_token: idToken
-          };
+        const idToken = crypto.makeIdToken(payload, host);
+        const tokenResponse = {
+          access_token: slackToken.access_token,
+          scope,
+          token_type: 'bearer',
+          id_token: idToken
+        };
 
-          logger.debug('Resolved token response: %j', tokenResponse, {});
+        logger.debug('Resolved token response: %j', tokenResponse, {});
 
-          resolve(tokenResponse);
-        });
+        resolve(tokenResponse);
       });
     });
 

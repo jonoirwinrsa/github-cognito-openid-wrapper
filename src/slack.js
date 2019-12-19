@@ -7,7 +7,7 @@ const {
 const logger = require('./connectors/logger');
 
 const getApiEndpoints = () => ({
-  userDetails: `https://slack.com/api/users.info`,
+  userDetails: `https://slack.com/api/users.identity`,
   oauthToken: `https://slack.com/api/oauth.access`,
   oauthAuthorize: `https://slack.com/oauth/authorize`
 });
@@ -32,14 +32,14 @@ const check = response => {
   );
 };
 
-const slackGet = (url, accessToken) =>
+const slackGet = (url, accessToken, params) =>
   axios({
     method: 'get',
     url,
-    params: {
-      token: accessToken,
-      user: 'U2T7NS9AA'
-    }
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    params,
   });
 
 module.exports = (apiBaseUrl, loginBaseUrl) => {
